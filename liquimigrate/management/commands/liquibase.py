@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 from optparse import make_option
+import os
 
 class Command(BaseCommand):
     help = "liquibase migrations"
@@ -59,7 +60,8 @@ class Command(BaseCommand):
 --driver=%(driver)s --classpath=%(classpath)s --url=%(url)s \
 %(command)s" % ( cmdargs)
 
-        print cmdline
+        print "executing: %s" % (cmdline,)
+        os.system( cmdline)
 
 
 def _get_url_for_db(tag, dbsettings):
