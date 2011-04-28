@@ -43,6 +43,9 @@ class Command(BaseCommand):
         password = options.get('password') or  dbsettings.get('PASSWORD')
         url = options.get('url') or _get_url_for_db(dbtag, dbsettings)
 
+        if len(args) < 1:
+            raise CommandError("give me any command, for example 'update'")
+
         command = args[0]
         cmdargs = {
             'jar': LIQUIBASE_JAR,
