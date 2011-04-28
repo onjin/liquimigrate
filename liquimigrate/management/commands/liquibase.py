@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from b2bid.liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 from optparse import make_option
 
 class Command(BaseCommand):
