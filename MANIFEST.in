@@ -1,3 +1,4 @@
 include version.py
 include RELEASE-VERSION
 include CHANGELOG.txt
+recursive-include liquimigrate/vendor *
