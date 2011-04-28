@@ -1,0 +1,16 @@
+#!/bin/bash
+
+first=1
+for version in `git tag |sort -Vr; git log --pretty=format:"%H" | tail -1`; do
+    if [ ${first} == 1 ]; then
+        prev=${version}
+        rm -f CHANGELOG.txt
+        first=0
+    else
+        date=`git log ${prev} -1 --pretty=format:"%ci"`
+        echo "${prev} - ${date}:" >> CHANGELOG.txt
+        git log ${prev}...${version} --pretty=format:" - %s"|grep -v 'Merge branch' | grep -v 'BUMP VERSION' >> CHANGELOG.txt
+        echo >> CHANGELOG.txt
+        prev=${version}
+    fi
+done

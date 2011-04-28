@@ -1,0 +1,10 @@
+*~
+*.py[co]
+.*.swp
+/build
+/dist
+*.egg-info
+RELEASE-VERSION
+/doc/build
+/CHANGELOG.txt
+/tmp
