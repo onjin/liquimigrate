@@ -3,6 +3,19 @@ from django.core.management.base import BaseCommand, CommandError
 from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 from optparse import make_option
 import os
+        
+DB_DEFAULTS = {
+    'postgresql': {
+        'tag': 'postgresql',
+        'host': 'localhost',
+        'port': 5432,
+    },
+    'mysql': {
+        'tag': 'mysql',
+        'host': 'localhost',
+        'port': 3306,
+    },
+}
 
 class Command(BaseCommand):
     help = "liquibase migrations"
@@ -77,11 +90,3 @@ def _get_url_for_db(tag, dbsettings):
     options.update( DB_DEFAULTS.get(tag))
     return pattern %  options 
 
-        
-DB_DEFAULTS = {
-    'postgresql': {
-        'tag': 'postgresql',
-        'host': 'localhost',
-        'port': 5432,
-    }
-}
