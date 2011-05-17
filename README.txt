@@ -20,7 +20,7 @@ Supported driver:
 
 Install
 -------
- - install liquimigrate egg from pypi.i-shark.com
+ - install liquimigrate egg 
  - add 'liquimigrate' to INSTALLED_APPS
  - configure LIQUIMIGRATE_CHANGELOG_FILE os.path.join(os.path.dirname(__file__), "migrations", "your.xml") in settings
  - ensure that you have java on your path
