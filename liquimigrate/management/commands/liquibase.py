@@ -69,12 +69,13 @@ class Command(BaseCommand):
             'driver': driver,
             'classpath': classpath,
             'url': url,
+            'args': ' '.join(args[1:]),
         }
 
         cmdline = "java -jar %(jar)s --changeLogFile %(changelog_file)s \
 --username=%(username)s --password=%(password)s \
 --driver=%(driver)s --classpath=%(classpath)s --url=%(url)s \
-%(command)s" % ( cmdargs)
+%(command)s %(args)s" % ( cmdargs)
 
         print "executing: %s" % (cmdline,)
         os.system( cmdline)
