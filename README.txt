@@ -1,5 +1,8 @@
 Liquibase migrations with django.
 *********************************
+License: BSD
+Author:  Marek Wywiał <onjinx@gmail.com>
+
 
 How it works
 ------------
@@ -11,7 +14,9 @@ Changelog path are got from LIQUIMIGRATE_CHANGELOG_FILE or from command line
 
 Supported driver:
  * postgresql
+ * mysql
  * more in future
+
 
 Install
 -------
@@ -20,9 +25,11 @@ Install
  - configure LIQUIMIGRATE_CHANGELOG_FILE os.path.join(os.path.dirname(__file__), "migrations", "your.xml") in settings
  - ensure that you have java on your path
 
+
 Usage
 -----
 Just run ./management.py liquibase update or ./management.py liquibase -h
+
 
 Development
 -----------
