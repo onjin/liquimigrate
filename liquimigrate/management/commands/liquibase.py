@@ -45,7 +45,7 @@ class Command(BaseCommand):
         dbsettings = settings.DATABASES[database]
 
         # get driver
-        driver_class = dbsettings.get('ENGINE').split('.')[-1]
+        driver_class = options.get('driver', dbsettings.get('ENGINE').split('.')[-1])
         dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(driver_class, ( None, None, None))
         if driver is None:
             raise CommandError("unsupported db driver '%s'\navailable drivers: %s" % (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
