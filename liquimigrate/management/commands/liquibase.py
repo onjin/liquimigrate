@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management.sql import emit_post_sync_signal
+from django.core.management import call_command
 from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+
 try:
     from django.db import connections
     databases = connections.databases
@@ -94,7 +97,26 @@ class Command(BaseCommand):
 %(command)s %(args)s" % ( cmdargs)
 
         print "executing: %s" % (cmdline,)
-        os.system( cmdline)
+        rc = os.system( cmdline)
+
+        if rc == 0:
+            created_models = None   # we dont know it
+            
+            try:
+                emit_post_sync_signal(
+                    created_models, 0,
+                    options.get('interactive'), database)
+
+                call_command('loaddata', 'initial_data',
+                    verbosity=0,
+                    database=database)
+            except TypeError:
+                # singledb (1.1 and older)
+                emit_post_sync_signal(
+                    created_models, 0,
+                    options.get('interactive'))
+                call_command('loaddata', 'initial_data',
+                    verbosity=0)
 
 
 def _get_url_for_db(tag, dbsettings):
