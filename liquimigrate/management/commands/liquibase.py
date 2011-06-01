@@ -1,6 +1,22 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+try:
+    from django.db import connections
+    databases = connections.databases
+except ImportError:
+    # django without multidb support
+    databases = {
+            'default': {
+                'ENGINE': settings.DATABASE_ENGINE,
+                'HOST': settings.DATABASE_HOST,
+                'PORT': settings.DATABASE_PORT,
+                'NAME': settings.DATABASE_NAME,
+                'USER': settings.DATABASE_USER,
+                'PASSWORD': settings.DATABASE_PASSWORD,
+            },
+        }
+
 from optparse import make_option
 import os
         
@@ -25,6 +41,8 @@ class Command(BaseCommand):
             help='XML file with changelog'),
         make_option('', '--driver', dest='driver',
             help='db driver'),
+        make_option('', '--classpath', dest='classpath',
+            help='jdbc driver class path'),
         make_option('', '--username', dest='username',
             help='db username'),
         make_option('', '--password', dest='password',
@@ -37,23 +55,21 @@ class Command(BaseCommand):
         """
         Handle liquibase command parameters
         """
-        try:
-            database = settings.LIQUIMIGRATE_DATABASE
-        except AttributeError:
-            database = 'default'
-
-        dbsettings = settings.DATABASES[database]
+        database = getattr(settings, 'LIQUIMIGRATE_DATABASE', 'default')
+        
+        dbsettings = databases[database]
 
         # get driver
         driver_class = options.get('driver') or dbsettings.get('ENGINE').split('.')[-1]
         dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(driver_class, ( None, None, None))
+        classpath = options.get('classpath') or classpath
         if driver is None:
             raise CommandError("unsupported db driver '%s'\navailable drivers: %s" % (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
 
         # command options 
         changelog_file = options.get('changelog_file') or settings.LIQUIMIGRATE_CHANGELOG_FILE
-        username = options.get('username') or  dbsettings.get('USER')
-        password = options.get('password') or  dbsettings.get('PASSWORD')
+        username = options.get('username') or dbsettings.get('USER') or ''
+        password = options.get('password') or dbsettings.get('PASSWORD') or ''
         url = options.get('url') or _get_url_for_db(dbtag, dbsettings)
 
         if len(args) < 1:
