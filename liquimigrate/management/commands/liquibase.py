@@ -52,15 +52,21 @@ class Command(BaseCommand):
             help='db password'),
         make_option('', '--url', dest='url',
             help='db url'),
+        make_option('', '--database', dest='database', default='default',
+            help='django database connection name'),
         )
 
     def handle(self, *args, **options):
         """
         Handle liquibase command parameters
         """
-        database = getattr(settings, 'LIQUIMIGRATE_DATABASE', 'default')
+        database = getattr(settings, 'LIQUIMIGRATE_DATABASE', options['database'])
         
-        dbsettings = databases[database]
+        try:
+            dbsettings = databases[database]
+        except KeyError:
+            raise CommandError("don't know such a connection: %s" % database)
+
 
         # get driver
         driver_class = options.get('driver') or dbsettings.get('ENGINE').split('.')[-1]
@@ -70,7 +76,8 @@ class Command(BaseCommand):
             raise CommandError("unsupported db driver '%s'\navailable drivers: %s" % (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
 
         # command options 
-        changelog_file = options.get('changelog_file') or settings.LIQUIMIGRATE_CHANGELOG_FILE
+        changelog_file = options.get('changelog_file') or _get_changelog_file(options['database'])
+        print changelog_file
         username = options.get('username') or dbsettings.get('USER') or ''
         password = options.get('password') or dbsettings.get('PASSWORD') or ''
         url = options.get('url') or _get_url_for_db(dbtag, dbsettings)
@@ -128,4 +135,18 @@ def _get_url_for_db(tag, dbsettings):
     }
     options.update( DB_DEFAULTS.get(tag))
     return pattern %  options 
+
+def _get_changelog_file(database):
+    try:
+        return settings.LIQUIMIGRATE_CHANGELOG_FILES[database]
+    except AttributeError:
+        if database == 'default':
+            try:
+                return settings.LIQUIMIGRATE_CHANGELOG_FILE
+            except AttributeError:
+                raise CommandError('give me changelog somehow')
+        else:
+            raise CommandError('settings.LIQUIMIGRATE_CHANGELOG_FILES dict is needed due to multidb operation')
+    except KeyError:
+        raise CommandError("don't know changelog for connection: %s" % database)
 
