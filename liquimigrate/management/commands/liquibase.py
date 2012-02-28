@@ -22,7 +22,7 @@ except ImportError:
 
 from optparse import make_option
 import os
-        
+
 DB_DEFAULTS = {
     'postgresql': {
         'tag': 'postgresql',
@@ -35,6 +35,7 @@ DB_DEFAULTS = {
         'port': 3306,
     },
 }
+
 
 class Command(BaseCommand):
     help = "liquibase migrations"
@@ -60,24 +61,29 @@ class Command(BaseCommand):
         """
         Handle liquibase command parameters
         """
-        database = getattr(settings, 'LIQUIMIGRATE_DATABASE', options['database'])
-        
+        database = getattr(settings, 'LIQUIMIGRATE_DATABASE',
+                options['database'])
+
         try:
             dbsettings = databases[database]
         except KeyError:
             raise CommandError("don't know such a connection: %s" % database)
 
-
+        verbosity = int(options.get('verbosity'))
         # get driver
-        driver_class = options.get('driver') or dbsettings.get('ENGINE').split('.')[-1]
-        dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(driver_class, ( None, None, None))
+        driver_class = options.get('driver') or \
+                dbsettings.get('ENGINE').split('.')[-1]
+        dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(driver_class,
+                (None, None, None))
         classpath = options.get('classpath') or classpath
         if driver is None:
-            raise CommandError("unsupported db driver '%s'\navailable drivers: %s" % (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
+            raise CommandError("unsupported db driver '%s'\n\
+                    available drivers: %s" %
+                    (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
 
-        # command options 
-        changelog_file = options.get('changelog_file') or _get_changelog_file(options['database'])
-        print changelog_file
+        # command options
+        changelog_file = options.get('changelog_file') or \
+                        _get_changelog_file(options['database'])
         username = options.get('username') or dbsettings.get('USER') or ''
         password = options.get('password') or dbsettings.get('PASSWORD') or ''
         url = options.get('url') or _get_url_for_db(dbtag, dbsettings)
@@ -101,14 +107,16 @@ class Command(BaseCommand):
         cmdline = "java -jar %(jar)s --changeLogFile %(changelog_file)s \
 --username=%(username)s --password=%(password)s \
 --driver=%(driver)s --classpath=%(classpath)s --url=%(url)s \
-%(command)s %(args)s" % ( cmdargs)
+%(command)s %(args)s" % (cmdargs)
 
-        print "executing: %s" % (cmdline,)
-        rc = os.system( cmdline)
+        if verbosity > 0:
+            print "changelog file: %s" % (changelog_file,)
+            print "executing: %s" % (cmdline,)
+        rc = os.system(cmdline)
 
         if rc == 0:
             created_models = None   # we dont know it
-            
+
             try:
                 emit_post_sync_signal(
                     created_models, 0,
@@ -133,8 +141,9 @@ def _get_url_for_db(tag, dbsettings):
             'host': dbsettings.get('HOST', ''),
             'port': dbsettings.get('PORT', ''),
     }
-    options.update( DB_DEFAULTS.get(tag))
-    return pattern %  options 
+    options.update(DB_DEFAULTS.get(tag))
+    return pattern % options
+
 
 def _get_changelog_file(database):
     try:
@@ -146,7 +155,8 @@ def _get_changelog_file(database):
             except AttributeError:
                 raise CommandError('give me changelog somehow')
         else:
-            raise CommandError('settings.LIQUIMIGRATE_CHANGELOG_FILES dict is needed due to multidb operation')
+            raise CommandError('settings.LIQUIMIGRATE_CHANGELOG_FILES dict \
+                    is needed due to multidb operation')
     except KeyError:
-        raise CommandError("don't know changelog for connection: %s" % database)
-
+        raise CommandError("don't know changelog for connection: %s" %
+                database)

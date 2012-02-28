@@ -17,7 +17,7 @@ setup(name='liquimigrate',
       version=get_git_version(),
       description="Liquibase migrations with django",
       long_description=(
-          read('README.txt')
+          read('README.rst')
       ),
       classifiers=[
           'Programming Language :: Python',
@@ -26,7 +26,7 @@ setup(name='liquimigrate',
       keywords='i-dotcom liquibase django',
       author='Marek Wywiał',
       author_email='marek.wywial@i-dotcom.pl',
-      url = "https://github.com/i-dotcom/liquimigrate",
+      url="https://github.com/i-dotcom/liquimigrate",
       license='BSD',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       test_suite='tests',
