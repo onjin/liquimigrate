@@ -136,12 +136,17 @@ class Command(BaseCommand):
 
 def _get_url_for_db(tag, dbsettings):
     pattern = "jdbc:%(tag)s://%(host)s:%(port)s/%(name)s"
-    options = {
-            'name': dbsettings.get('NAME', ''),
-            'host': dbsettings.get('HOST', ''),
-            'port': dbsettings.get('PORT', ''),
-    }
-    options.update(DB_DEFAULTS.get(tag))
+    options = dict(DB_DEFAULTS.get(tag))
+    settings_map = {
+        'NAME': 'name',
+        'HOST': 'host',
+        'PORT': 'port',
+        }
+    for key in settings_map:
+        value = dbsettings.get(key)
+        if value:
+            options[settings_map[key]] = value
+
     return pattern % options
 
 
