@@ -128,13 +128,15 @@ class Command(BaseCommand):
 
 def _get_url_for_db(tag, dbsettings):
     pattern = "jdbc:%(tag)s://%(host)s:%(port)s/%(name)s"
-    options = {
+    instance_options = {
             'name': dbsettings.get('NAME', ''),
-            'host': dbsettings.get('HOST', ''),
-            'port': dbsettings.get('PORT', ''),
+            'host': dbsettings.get('HOST') or DB_DEFAULTS.get(tag).get('host'),
+            'port': dbsettings.get('PORT') or DB_DEFAULTS.get(tag).get('port'),
     }
-    options.update( DB_DEFAULTS.get(tag))
-    return pattern %  options 
+
+    options = DB_DEFAULTS.get(tag)
+    options.update(instance_options)
+    return pattern %  options
 
 def _get_changelog_file(database):
     try:
