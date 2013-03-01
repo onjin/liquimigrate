@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.sql import emit_post_sync_signal
 from django.core.management import call_command
-from liquimigrate import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+from liquimigrate.settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 
 try:
     from django.db import connections

@@ -2,6 +2,7 @@
 
 import os
 from version import get_git_version
+import liquimigrate
 from setuptools import setup, find_packages
 
 
@@ -14,7 +15,7 @@ def read(fname):
 
 
 setup(name='liquimigrate',
-      version=get_git_version(),
+      version=liquimigrate.__version__,
       description="Liquibase migrations with django",
       long_description=(
           read('README.rst')
