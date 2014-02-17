@@ -6,9 +6,9 @@ Liquibase migrations with django.
    :target: https://crate.io/packages/liquimigrate
 
 
-License: BSD
-Liquibase license: Apache 2.0
-Author:  Marek Wywiał <onjinx@gmail.com>
+ * License: BSD
+ * Liquibase license: Apache 2.0
+ * Author:  Marek Wywiał <onjinx@gmail.com>
 
 
 Quick start
