@@ -1,14 +1,3 @@
-"""
-Liquimigrate settings module
-"""
-
-__author__ = "Marcin Nowak"
-__copyright__ = "Copyright 2013"
-__license__ = "BSD"
-__maintainer__ = "Marcin Nowak"
-__email__ = "marcin.j.nowak@gmail.com"
-
-
 import os
 from django.conf import settings
 
