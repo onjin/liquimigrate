@@ -1,6 +1,15 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.core.management.sql import emit_post_sync_signal
+try:
+    # Django 1.7
+    from django.core.management.sql import (emit_pre_migrate_signal,
+        emit_post_migrate_signal)
+except ImportError:
+    # Django 1.6 and older
+    from django.core.management.sql import emit_post_sync_signal
+    emit_pre_migrate_signal = None
+    emit_post_migrate_signal = None
+
 from django.core.management import call_command
 from liquimigrate.settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 
@@ -112,24 +121,32 @@ class Command(BaseCommand):
         if verbosity > 0:
             print "changelog file: %s" % (changelog_file,)
             print "executing: %s" % (cmdline,)
+
+        created_models = None   # we dont know it
+
+        if emit_pre_migrate_signal:
+            emit_pre_migrate_signal(created_models, 0,
+                    options.get('interactive'), database)
+
         rc = os.system(cmdline)
 
         if rc == 0:
-            created_models = None   # we dont know it
-
             try:
-                emit_post_sync_signal(
-                    created_models, 0,
-                    options.get('interactive'), database)
+                if emit_post_migrate_signal:
+                    emit_post_migrate_signal(created_models, 0,
+                            options.get('interactive'), database)
+                else:
+                    emit_post_sync_signal(created_models, 0,
+                            options.get('interactive'), database)
 
                 call_command('loaddata', 'initial_data',
                     verbosity=0,
                     database=database)
             except TypeError:
                 # singledb (1.1 and older)
-                emit_post_sync_signal(
-                    created_models, 0,
+                emit_post_sync_signal(created_models, 0,
                     options.get('interactive'))
+
                 call_command('loaddata', 'initial_data',
                     verbosity=0)
 
