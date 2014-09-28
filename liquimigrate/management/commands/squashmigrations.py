@@ -26,7 +26,7 @@ Type 'yes' to continue, or 'no' to cancel: """)
             if confirm == "yes":
                 super(Command, self).handle(**options)
             else:
-                print "Migrate cancelled."
+                print "Squashing migrations cancelled."
 else:
     class Command(BaseCommand):
         def handle(self, *args, **kwargs):
