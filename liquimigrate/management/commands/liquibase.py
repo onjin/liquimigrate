@@ -4,6 +4,7 @@ try:
     # Django 1.7
     from django.core.management.sql import (emit_pre_migrate_signal,
         emit_post_migrate_signal)
+    emit_post_sync_signal = None
 except ImportError:
     # Django 1.6 and older
     from django.core.management.sql import emit_post_sync_signal
@@ -102,11 +103,6 @@ class Command(BaseCommand):
         if len(args) < 1:
             raise CommandError("give me any command, for example 'update'")
 
-        if options.get('no_signals'):
-            emit_post_migrate_signal = None
-            emit_pre_migrate_signal = None
-            emit_post_sync_signal = None
-
         command = args[0]
         cmdargs = {
             'jar': LIQUIBASE_JAR,
@@ -138,13 +134,15 @@ class Command(BaseCommand):
         rc = os.system(cmdline)
 
         if rc == 0:
+
             try:
-                if emit_post_migrate_signal:
-                    emit_post_migrate_signal(created_models, 0,
-                            options.get('interactive'), database)
-                elif emit_post_sync_signal:
-                    emit_post_sync_signal(created_models, 0,
-                            options.get('interactive'), database)
+                if not options.get('no_signals'):
+                    if emit_post_migrate_signal:
+                        emit_post_migrate_signal(created_models, 0,
+                                options.get('interactive'), database)
+                    elif emit_post_sync_signal:
+                        emit_post_sync_signal(created_models, 0,
+                                options.get('interactive'), database)
 
                 call_command('loaddata', 'initial_data',
                     verbosity=0,
