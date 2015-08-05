@@ -64,6 +64,8 @@ class Command(BaseCommand):
             help='db url'),
         make_option('', '--database', dest='database', default='default',
             help='django database connection name'),
+        make_option('-n', '--nosignals', dest='no_signals', action='store_true', default=False,
+            help='disable emitting pre- and post migration signals'),
         )
 
     def handle(self, *args, **options):
@@ -100,6 +102,11 @@ class Command(BaseCommand):
         if len(args) < 1:
             raise CommandError("give me any command, for example 'update'")
 
+        if options.get('no_signals'):
+            emit_post_migrate_signal = None
+            emit_pre_migrate_signal = None
+            emit_post_sync_signal = None
+
         command = args[0]
         cmdargs = {
             'jar': LIQUIBASE_JAR,
@@ -135,7 +142,7 @@ class Command(BaseCommand):
                 if emit_post_migrate_signal:
                     emit_post_migrate_signal(created_models, 0,
                             options.get('interactive'), database)
-                else:
+                elif emit_post_sync_signal:
                     emit_post_sync_signal(created_models, 0,
                             options.get('interactive'), database)
 
