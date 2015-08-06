@@ -4,6 +4,7 @@ try:
     # Django 1.7
     from django.core.management.sql import (emit_pre_migrate_signal,
         emit_post_migrate_signal)
+    emit_post_sync_signal = None
 except ImportError:
     # Django 1.6 and older
     from django.core.management.sql import emit_post_sync_signal
@@ -64,6 +65,8 @@ class Command(BaseCommand):
             help='db url'),
         make_option('', '--database', dest='database', default='default',
             help='django database connection name'),
+        make_option('-n', '--nosignals', dest='no_signals', action='store_true', default=False,
+            help='disable emitting pre- and post migration signals'),
         )
 
     def handle(self, *args, **options):
@@ -131,13 +134,15 @@ class Command(BaseCommand):
         rc = os.system(cmdline)
 
         if rc == 0:
+
             try:
-                if emit_post_migrate_signal:
-                    emit_post_migrate_signal(created_models, 0,
-                            options.get('interactive'), database)
-                else:
-                    emit_post_sync_signal(created_models, 0,
-                            options.get('interactive'), database)
+                if not options.get('no_signals'):
+                    if emit_post_migrate_signal:
+                        emit_post_migrate_signal(created_models, 0,
+                                options.get('interactive'), database)
+                    elif emit_post_sync_signal:
+                        emit_post_sync_signal(created_models, 0,
+                                options.get('interactive'), database)
 
                 call_command('loaddata', 'initial_data',
                     verbosity=0,
