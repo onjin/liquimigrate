@@ -20,7 +20,7 @@ test_requirements = [
 
 setup(
     name='liquimigrate',
-    version='0.5.1',
+    version='0.5.2',
     description="Liquibase migrations with django",
     long_description=readme + '\n\n' + history,
     author="Marek Wywiał",
