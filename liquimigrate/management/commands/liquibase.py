@@ -128,7 +128,7 @@ class Command(BaseCommand):
 
         created_models = None   # we dont know it
 
-        if emit_pre_migrate_signal:
+        if emit_pre_migrate_signal and not options.get('no_signals'):
             emit_pre_migrate_signal(created_models, 0,
                     options.get('interactive'), database)
 
