@@ -5,6 +5,7 @@ include LICENSE
 include README.rst
 
 recursive-include liquimigrate/vendor *
+recursive-include liquimigrate/management *
 
 recursive-include tests *
 recursive-exclude * __pycache__

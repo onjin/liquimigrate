@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+
 try:
     # Django 1.7
     from django.core.management.sql import (emit_pre_migrate_signal,
@@ -154,6 +155,8 @@ class Command(BaseCommand):
 
                 call_command('loaddata', 'initial_data',
                     verbosity=0)
+        else:
+            raise CommandError('Liquibase returned an error code %s' % rc)
 
 
 def _get_url_for_db(tag, dbsettings):

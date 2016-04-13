@@ -3,6 +3,16 @@
 History
 -------
 
+0.5.2 (2015-10-22)
+------------------
+
+* added `management` to `MANIFEST.in`
+
+0.5.1 (2015-10-22)
+------------------
+
+* handle liquibase return codes as an exception
+
 0.5.0 (2015-08-06)
 ------------------
 
