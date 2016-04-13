@@ -9,7 +9,7 @@ LIQUIBASE_DRIVERS = {
     'postgresql_psycopg2': ('postgresql', 'org.postgresql.Driver',
         os.path.join(os.path.dirname(__file__), 'vendor', 'connectors',
             'postgresql-jdbc3-8.2.jar')),
-    'postgis': ( 'postgresql', 'org.postgresql.Driver',
+    'postgis': ('postgresql', 'org.postgresql.Driver',
         os.path.join(os.path.dirname(__file__), 'vendor', 'connectors',
             'postgresql-jdbc3-8.2.jar')),
     'mysql': ('mysql', 'com.mysql.jdbc.Driver',
