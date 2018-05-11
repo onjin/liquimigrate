@@ -146,7 +146,7 @@ class Command(BaseCommand):
 
         created_models = None   # we dont know it
 
-        if emit_pre_migrate_signal:
+        if emit_pre_migrate_signal and not options.get('no_signals'):
             if django_19_or_newer:
                 emit_pre_migrate_signal(
                         1, options.get('interactive'), database)
