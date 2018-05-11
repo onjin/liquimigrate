@@ -1,10 +1,17 @@
+import distutils
+import django
+import os
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management import call_command
+
+from liquimigrate.settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
 
 try:
-    # Django 1.7
-    from django.core.management.sql import (emit_pre_migrate_signal,
-        emit_post_migrate_signal)
+    # Django 3.7
+    from django.core.management.sql import (
+            emit_pre_migrate_signal, emit_post_migrate_signal)
     emit_post_sync_signal = None
 except ImportError:
     # Django 1.6 and older
@@ -12,8 +19,9 @@ except ImportError:
     emit_pre_migrate_signal = None
     emit_post_migrate_signal = None
 
-from django.core.management import call_command
-from liquimigrate.settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+
+django_19_or_newer = (
+        distutils.version.StrictVersion(django.__version__) >= '1.9')
 
 try:
     from django.db import connections
@@ -31,8 +39,6 @@ except ImportError:
             },
         }
 
-from optparse import make_option
-import os
 
 DB_DEFAULTS = {
     'postgresql': {
@@ -51,31 +57,40 @@ DB_DEFAULTS = {
 class Command(BaseCommand):
     help = "liquibase migrations"
 
-    option_list = BaseCommand.option_list + (
-        make_option('', '--changeLogFile', dest='changelog_file',
-            help='XML file with changelog'),
-        make_option('', '--driver', dest='driver',
-            help='db driver'),
-        make_option('', '--classpath', dest='classpath',
-            help='jdbc driver class path'),
-        make_option('', '--username', dest='username',
-            help='db username'),
-        make_option('', '--password', dest='password',
-            help='db password'),
-        make_option('', '--url', dest='url',
-            help='db url'),
-        make_option('', '--database', dest='database', default='default',
-            help='django database connection name'),
-        make_option('-n', '--nosignals', dest='no_signals', action='store_true', default=False,
-            help='disable emitting pre- and post migration signals'),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument('command', help='Liquibase command')
+        parser.add_argument(
+                'args', nargs='*', help='Liquibase positional arguments')
+        parser.add_argument(
+            '--changeLogFile', dest='changelog_file',
+            help='XML file with changelog')
+        parser.add_argument(
+            '--driver', dest='driver',
+            help='db driver')
+        parser.add_argument(
+            '--classpath', dest='classpath',
+            help='jdbc driver class path')
+        parser.add_argument(
+            '--username', dest='username',
+            help='db username')
+        parser.add_argument(
+            '--password', dest='password',
+            help='db password')
+        parser.add_argument('--url', dest='url', help='db url')
+        parser.add_argument(
+            '--database', dest='database', default='default',
+            help='django database connection name')
+        parser.add_argument(
+            '-n', '--nosignals', dest='no_signals', action='store_true',
+            default=False,
+            help='disable emitting pre- and post migration signals')
 
     def handle(self, *args, **options):
         """
         Handle liquibase command parameters
         """
-        database = getattr(settings, 'LIQUIMIGRATE_DATABASE',
-                options['database'])
+        database = getattr(
+                settings, 'LIQUIMIGRATE_DATABASE', options['database'])
 
         try:
             dbsettings = databases[database]
@@ -83,28 +98,31 @@ class Command(BaseCommand):
             raise CommandError("don't know such a connection: %s" % database)
 
         verbosity = int(options.get('verbosity'))
+
         # get driver
-        driver_class = options.get('driver') or \
-                dbsettings.get('ENGINE').split('.')[-1]
-        dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(driver_class,
-                (None, None, None))
+        driver_class = (
+                options.get('driver')
+                or dbsettings.get('ENGINE').split('.')[-1])
+        dbtag, driver, classpath = LIQUIBASE_DRIVERS.get(
+                            driver_class, (None, None, None))
+
         classpath = options.get('classpath') or classpath
+
         if driver is None:
-            raise CommandError("unsupported db driver '%s'\n\
-                    available drivers: %s" %
-                    (driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
+            raise CommandError(
+                "unsupported db driver '%s'\n"
+                "available drivers: %s" % (
+                    driver_class, ' '.join(LIQUIBASE_DRIVERS.keys())))
 
         # command options
-        changelog_file = options.get('changelog_file') or \
-                        _get_changelog_file(options['database'])
+        changelog_file = (
+                options.get('changelog_file')
+                or _get_changelog_file(options['database']))
         username = options.get('username') or dbsettings.get('USER') or ''
         password = options.get('password') or dbsettings.get('PASSWORD') or ''
         url = options.get('url') or _get_url_for_db(dbtag, dbsettings)
 
-        if len(args) < 1:
-            raise CommandError("give me any command, for example 'update'")
-
-        command = args[0]
+        command = options['command']
         cmdargs = {
             'jar': LIQUIBASE_JAR,
             'changelog_file': changelog_file,
@@ -114,7 +132,7 @@ class Command(BaseCommand):
             'driver': driver,
             'classpath': classpath,
             'url': url,
-            'args': ' '.join(args[1:]),
+            'args': ' '.join(args),
         }
 
         cmdline = "java -jar %(jar)s --changeLogFile %(changelog_file)s \
@@ -123,14 +141,18 @@ class Command(BaseCommand):
 %(command)s %(args)s" % (cmdargs)
 
         if verbosity > 0:
-            print "changelog file: %s" % (changelog_file,)
-            print "executing: %s" % (cmdline,)
+            print("changelog file: %s" % (changelog_file,))
+            print("executing: %s" % (cmdline,))
 
         created_models = None   # we dont know it
 
         if emit_pre_migrate_signal:
-            emit_pre_migrate_signal(created_models, 0,
-                    options.get('interactive'), database)
+            if django_19_or_newer:
+                emit_pre_migrate_signal(
+                        1, options.get('interactive'), database)
+            else:
+                emit_pre_migrate_signal(
+                    created_models, 1, options.get('interactive'), database)
 
         rc = os.system(cmdline)
 
@@ -139,22 +161,29 @@ class Command(BaseCommand):
             try:
                 if not options.get('no_signals'):
                     if emit_post_migrate_signal:
-                        emit_post_migrate_signal(created_models, 0,
+                        if django_19_or_newer:
+                            emit_post_migrate_signal(
+                                0, options.get('interactive'), database)
+                        else:
+                            emit_post_migrate_signal(
+                                created_models, 0,
                                 options.get('interactive'), database)
                     elif emit_post_sync_signal:
-                        emit_post_sync_signal(created_models, 0,
+                        emit_post_sync_signal(
+                                created_models, 0,
                                 options.get('interactive'), database)
 
-                call_command('loaddata', 'initial_data',
-                    verbosity=0,
-                    database=database)
+                if not django_19_or_newer:
+                    call_command(
+                        'loaddata', 'initial_data', verbosity=1,
+                        database=database)
             except TypeError:
                 # singledb (1.1 and older)
-                emit_post_sync_signal(created_models, 0,
-                    options.get('interactive'))
+                emit_post_sync_signal(
+                        created_models, 0, options.get('interactive'))
 
-                call_command('loaddata', 'initial_data',
-                    verbosity=0)
+                call_command(
+                        'loaddata', 'initial_data', verbosity=0)
         else:
             raise CommandError('Liquibase returned an error code %s' % rc)
 
@@ -188,5 +217,5 @@ def _get_changelog_file(database):
             raise CommandError('settings.LIQUIMIGRATE_CHANGELOG_FILES dict \
                     is needed due to multidb operation')
     except KeyError:
-        raise CommandError("don't know changelog for connection: %s" %
-                database)
+        raise CommandError(
+                "don't know changelog for connection: %s" % database)
