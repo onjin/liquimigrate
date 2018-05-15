@@ -13,3 +13,6 @@ Liquibase migrations for Django
 
 * License: BSD
 * Documentation: https://liquimigrate.readthedocs.org.
+
+Starting from v0.7.0 Liquimigrate requires Django 1.8 or newer.
+Django 2.0 is not officially supported yet.

@@ -20,7 +20,7 @@ test_requirements = [
 
 setup(
     name='liquimigrate',
-    version='0.6.0',
+    version='0.7.0',
     description="Liquibase migrations with django",
     long_description=readme + '\n\n' + history,
     author="Marek Wywiał",
@@ -41,7 +41,12 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
+        'Framework :: Django',
+        'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
