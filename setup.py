@@ -13,6 +13,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = [
+        'six'
 ]
 
 test_requirements = [
@@ -20,7 +21,7 @@ test_requirements = [
 
 setup(
     name='liquimigrate',
-    version='0.7.0',
+    version='0.7.1',
     description="Liquibase migrations with django",
     long_description=readme + '\n\n' + history,
     author="Marek Wywiał",
