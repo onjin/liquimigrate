@@ -6,7 +6,9 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 
-from liquimigrate.settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+from ...settings import LIQUIBASE_JAR, LIQUIBASE_DRIVERS
+from ... import changesets
+
 
 try:
     # Django 3.7
@@ -206,16 +208,6 @@ def _get_url_for_db(tag, dbsettings):
 
 def _get_changelog_file(database):
     try:
-        return settings.LIQUIMIGRATE_CHANGELOG_FILES[database]
-    except AttributeError:
-        if database == 'default':
-            try:
-                return settings.LIQUIMIGRATE_CHANGELOG_FILE
-            except AttributeError:
-                raise CommandError('give me changelog somehow')
-        else:
-            raise CommandError('settings.LIQUIMIGRATE_CHANGELOG_FILES dict \
-                    is needed due to multidb operation')
-    except KeyError:
-        raise CommandError(
-                "don't know changelog for connection: %s" % database)
+        return changesets.get_changelog_file_for_database(database)
+    except changesets.ImproperlyConfigured as ex:
+        raise CommandError(ex)
