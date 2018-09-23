@@ -1,5 +1,8 @@
+from six.moves import input
+
 try:
-    from django.core.management.commands.squashmigrations import Command as MigrateCommand
+    from django.core.management.commands.squashmigrations import (
+            Command as MigrateCommand)
 except ImportError:
     from django.core.management.base import BaseCommand, CommandError
     MigrateCommand = None
@@ -14,7 +17,7 @@ if MigrateCommand:
 
         def handle(self, *args, **options):
             if options.get("interactive"):
-                confirm = raw_input("""
+                confirm = input("""
 You have requested to squash migrations using standard Django 1.7+ mechanism.
 This CONFLICTS WITH LIQUIMIGRATE.
 Are you sure you want to do this?
@@ -24,9 +27,9 @@ Type 'yes' to continue, or 'no' to cancel: """)
                 confirm = "yes"
 
             if confirm == "yes":
-                super(Command, self).handle(**options)
+                super(Command, self).handle(*args, **options)
             else:
-                print "Squashing migrations cancelled."
+                print("Squashing migrations cancelled.")
 else:
     class Command(BaseCommand):
         def handle(self, *args, **kwargs):
